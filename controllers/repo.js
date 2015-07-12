@@ -7,6 +7,9 @@ var livecode = require('../livecode');
 var router = express.Router();
 var livecodeRouter = express.Router({ mergeParams: true });
 
+// Constants
+var LIVECODE_BRANCH = 'livecode';
+
 // Setup the sub-route to livecode calls
 router.use('/:name/livecode', livecodeRouter);
 // Setup the '/repo' routes, as our only export
@@ -123,18 +126,71 @@ router.get('/:name/step/:num', function(req, res, next) {
  *   (Specified repo name stored in req.params.name)
  */
 livecodeRouter.get('/', function(req, res, next) {
-  console.log('name: ' + req.params.name);
+  var repo = req.params['name'];
+  console.log('name: ' + repo);
   res.send('TODO: page template');
 });
 livecodeRouter.get('/start', function(req, res, next) {
-  res.send('TODO: start livecode!');
+  var repo = req.params['name'];
+  console.log('Starting livecode session for ' + repo);
+
+  // Get all steps, create branch off of initial commit (step 0)
+  livecode.getSteps(repo, function(steps) {
+    if (steps.error) 
+    {
+      res.json(steps);
+      return;
+    }
+
+    // Create branch
+    console.log('Livecode branch "' + LIVECODE_BRANCH + '" will be created off of hash "' + steps[0].hash + '"');
+    exec('git branch ' + LIVECODE_BRANCH + ' ' + steps[0].hash, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
+      if (error !== null) 
+      {
+        res.json({'error': 'branching error: ' + error});
+        return;
+      }
+      // NOTE: asynchronously executing here to minimize callback nesting, but should be a
+      //   safe assertation that this will always work (not catching errors just in case)
+      exec('git checkout ' + LIVECODE_BRANCH, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
+        if (error) console.log('ERROR: livecode checkout failed: ' + error);
+      });
+
+      // All done!
+      res.json({'success' : true });
+    });
+  });
 });
 livecodeRouter.get('/reset', function(req, res, next) {
-  res.send('TODO: reset');
+  var repo = req.params['name'];
+  console.log('Resetting ' + repo + ' to normal state');
+  exec('git checkout -f master', { cwd: 'data/' + repo }, function(error, stdout, stderr) {
+    // Check for an error on checkout
+    if (error !== null) 
+    {
+      res.json({'error': 'checkout error: ' + error});
+      return;
+    }
+
+    // No errors, so force branch deletion
+    exec('git branch -D ' + LIVECODE_BRANCH, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
+      // Check for an error on branch deletion
+      if (error !== null) 
+      {
+        res.json({'error': 'checkout error: ' + error});
+        return;
+      }
+
+      // All done!!
+      res.json({'success': true});
+    });
+  });
 });
 livecodeRouter.get('/livediff', function(req, res, next) {
+  var repo = req.params['name'];
   res.send('TODO: livediff');
 });
 livecodeRouter.get('/nextstep/:step', function(req, res, next) {
+  var repo = req.params['name'];
   res.send('TODO: nextstep (specify, or from session?)');
 });
