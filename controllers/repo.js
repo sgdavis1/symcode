@@ -77,7 +77,7 @@ router.get('/:name/step/:num', function(req, res, next) {
     }
     else if (!json[num - 1])
     {
-      res.json({'error': 'Bad step number'}); 
+      res.json({'error': {'command': 'step-details', 'message': 'Bad step number: ' + num}});
       return;
     }
 
@@ -87,7 +87,7 @@ router.get('/:name/step/:num', function(req, res, next) {
       var ret = {};
       if (error !== null)
       {
-        ret = {'error': 'exec error: ' + error};
+        ret = {'error': {'on': 'diff', 'command': 'step-details', 'message': error}};
       }
       else
       {
@@ -147,17 +147,21 @@ livecodeRouter.get('/start', function(req, res, next) {
     exec('git branch ' + LIVECODE_BRANCH + ' ' + steps[0].hash, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
       if (error !== null) 
       {
-        res.json({'error': 'branching error: ' + error});
+        res.json({'error': {'on': 'branching', 'command': 'start', 'message': error}});
         return;
       }
-      // NOTE: asynchronously executing here to minimize callback nesting, but should be a
-      //   safe assertation that this will always work (not catching errors just in case)
-      exec('git checkout ' + LIVECODE_BRANCH, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
-        if (error) console.log('ERROR: livecode checkout failed: ' + error);
-      });
 
-      // All done!
-      res.json({'success' : true });
+      // Now checkout the branch
+      exec('git checkout ' + LIVECODE_BRANCH, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
+        if (error !== null) 
+        {
+          res.json({'error': {'on': 'checkout', 'command': 'start', 'message': error}});
+          return;
+        }
+
+        // All done!
+        res.json({'success' : true });
+      });
     });
   });
 });
@@ -168,7 +172,7 @@ livecodeRouter.get('/reset', function(req, res, next) {
     // Check for an error on checkout
     if (error !== null) 
     {
-      res.json({'error': 'checkout error: ' + error});
+      res.json({'error': {'on': 'checkout', 'command': 'reset', 'message': error}});
       return;
     }
 
@@ -177,7 +181,7 @@ livecodeRouter.get('/reset', function(req, res, next) {
       // Check for an error on branch deletion
       if (error !== null) 
       {
-        res.json({'error': 'checkout error: ' + error});
+        res.json({'error': {'on': 'branch-del', 'command': 'reset', 'message': error}});
         return;
       }
 

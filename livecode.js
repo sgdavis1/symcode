@@ -26,7 +26,9 @@ module.exports.getSteps = function(repo, callback) {
   // Verify valid repo name
   if (!verifyRepo(repo))
   {
-    process.nextTick(function() { callback({'error': 'Bad demo name "' + repo + '"'}) });
+    process.nextTick(function() { 
+      callback({'error': {'on': 'verifyRepo', 'command': 'steps', 'message': 'Bad demo name "' + repo + '"'}});
+    });
     return;
   }
 
@@ -35,7 +37,7 @@ module.exports.getSteps = function(repo, callback) {
     var ret = {};
     if (error !== null)
     {
-      ret = {'error': 'exec error: ' + error};
+      ret = {'error': {'on': 'log', 'command': 'steps', 'message': error}};
     }
     else
     {
