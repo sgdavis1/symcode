@@ -1,6 +1,7 @@
 {
   "name": "livecode",
   "dependencies": {
+    "client-sessions": "^0.7.0",
     "express": "^4.13.1",
     "swig": "^1.4.2"
   }
