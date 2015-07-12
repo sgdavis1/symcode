@@ -5,12 +5,18 @@ var exec = require('child_process').exec;
 var livecode = require('../livecode');
 
 var router = express.Router();
+var livecodeRouter = express.Router({ mergeParams: true });
 
+// Setup the sub-route to livecode calls
+router.use('/:name/livecode', livecodeRouter);
 // Setup the '/repo' routes, as our only export
 module.exports = function(app) {
   app.use('/repo', router);
 };
 
+/**
+ * Repository metadata routes
+ */
 router.get('/:name', function(req, res, next) {
   var name = req.params.name;
 
@@ -112,3 +118,23 @@ router.get('/:name/step/:num', function(req, res, next) {
 });
 
 
+/**
+ * Livecode routes
+ *   (Specified repo name stored in req.params.name)
+ */
+livecodeRouter.get('/', function(req, res, next) {
+  console.log('name: ' + req.params.name);
+  res.send('TODO: page template');
+});
+livecodeRouter.get('/start', function(req, res, next) {
+  res.send('TODO: start livecode!');
+});
+livecodeRouter.get('/reset', function(req, res, next) {
+  res.send('TODO: reset');
+});
+livecodeRouter.get('/livediff', function(req, res, next) {
+  res.send('TODO: livediff');
+});
+livecodeRouter.get('/nextstep/:step', function(req, res, next) {
+  res.send('TODO: nextstep (specify, or from session?)');
+});

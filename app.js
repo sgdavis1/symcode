@@ -1,6 +1,5 @@
 var express = require('express');
 var session = require('client-sessions');
-var exec = require('child_process').exec;
 
 var livecode = require('./livecode');
 
