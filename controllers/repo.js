@@ -140,7 +140,7 @@ router.get('/:name/step/:num', function(req, res, next) {
  */
 livecodeRouter.get('/', function(req, res, next) {
   var repo = req.params['name'];
-  res.send('TODO: page template');
+  res.render('livecode', {data: 'stuff'});
 });
 livecodeRouter.get('/start', function(req, res, next) {
   var repo = req.params['name'];
