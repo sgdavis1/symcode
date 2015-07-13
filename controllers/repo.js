@@ -159,8 +159,17 @@ livecodeRouter.get('/start', function(req, res, next) {
           return;
         }
 
-        // All done!
-        res.json({'success' : true });
+        // Finally (last nest) create our lock file with the current step number(1)
+        fs.writeFile('data/' + repo + '.lock', '1', function(error) {
+          if (error !== null) 
+          {
+            res.json({'error': {'on': 'writeFile', 'command': 'start', 'message': error}});
+            return;
+          }
+
+          // All done!
+          res.json({'success' : true });
+        });
       });
     });
   });
