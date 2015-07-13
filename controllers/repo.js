@@ -18,6 +18,41 @@ module.exports = function(app) {
 };
 
 /**
+ * Utility function to get the diffs (per file) into an object.
+ */
+function getDiffObjs(data)
+{
+  var ret = {};
+
+  var lines = data.split(/\r?\n/);
+  var file = '';
+  var diff = [];
+  for (var i = 0; i < lines.length; i++)
+  {
+    // Check for the start of a new file
+    var matches = /diff --git a\/(.*) b\/(.*)/.exec(lines[i]);
+    if (matches)
+    {
+      if (file) ret[file] = diff;
+      // Reset
+      file = matches[1];
+      diff = [];
+    }
+    else
+    {
+      // Append to diff
+      diff.push(lines[i]);
+    }
+  }
+
+  // Push the final file listing
+  if (file) ret[file] = diff;
+
+  // All done
+  return ret;
+}
+
+/**
  * Repository metadata routes
  */
 router.get('/:name', function(req, res, next) {
@@ -91,29 +126,7 @@ router.get('/:name/step/:num', function(req, res, next) {
       }
       else
       {
-        var lines = stdout.split(/\r?\n/);
-        var file = '';
-        var diff = [];
-        for (var i = 0; i < lines.length; i++)
-        {
-          // Check for the start of a new file
-          var matches = /diff --git a\/(.*) b\/(.*)/.exec(lines[i]);
-          if (matches)
-          {
-            if (file) ret[file] = diff;
-            // Reset
-            file = matches[1];
-            diff = [];
-          }
-          else
-          {
-            // Append to diff
-            diff.push(lines[i]);
-          }
-        }
-
-        // Push the final file listing
-        if (file) ret[file] = diff;
+        ret = getDiffObjs(stdout);
       }
       res.json(ret);
     });
@@ -127,7 +140,6 @@ router.get('/:name/step/:num', function(req, res, next) {
  */
 livecodeRouter.get('/', function(req, res, next) {
   var repo = req.params['name'];
-  console.log('name: ' + repo);
   res.send('TODO: page template');
 });
 livecodeRouter.get('/start', function(req, res, next) {
@@ -201,7 +213,37 @@ livecodeRouter.get('/reset', function(req, res, next) {
 });
 livecodeRouter.get('/livediff', function(req, res, next) {
   var repo = req.params['name'];
-  res.send('TODO: livediff');
+  livecode.getCurrentStep(repo, function(data) {
+    // Check for an error on checkout
+    if (data.error) 
+    {
+      res.json({'error': {'on': 'getCurrentStep', 'command': 'livediff', 'message': data.error}});
+      return;
+    }
+
+    var step = data.step;
+    livecode.getSteps(repo, function(steps) {
+      if (steps.error) 
+      {
+        res.json({'error': {'on': 'getSteps', 'command': 'livediff', 'message': data.error}});
+        return;
+      }
+
+      exec('git --no-pager diff ' + steps[step].hash + ' --', {cwd: 'data/' + repo}, function(error, stdout, stderr) {
+        var ret = {};
+        if (error !== null)
+        {
+          ret = {'error': {'on': 'diff', 'command': 'livediff', 'message': error}};
+          ret.error.message['stderr'] = stderr;
+        }
+        else
+        {
+          ret = getDiffObjs(stdout);
+        }
+        res.json(ret);
+      });
+    });
+  });
 });
 livecodeRouter.get('/nextstep/:step', function(req, res, next) {
   var repo = req.params['name'];

@@ -4,6 +4,7 @@
  */
 
 var exec = require('child_process').exec;
+var fs = require('fs');
 
 /**
  * Repo check (private method)
@@ -60,3 +61,22 @@ module.exports.getSteps = function(repo, callback) {
   });
 };
 
+/**
+ * Loocking at the lockfile, get the current step of the livecode session.
+ */
+module.exports.getCurrentStep = function (repo, callback) {
+  fs.readFile('data/' + repo + '.lock', function(error, data) {
+    var ret = {};
+    if (error !== null)
+    {
+      ret = {'error': {'on': 'log', 'command': 'steps', 'message': error}};
+    }
+    else
+    {
+      ret = { 'step': data.toString('utf-8').trim() };
+    }
+
+    // Result to caller
+    process.nextTick(function() { callback(ret) });
+  });
+};
