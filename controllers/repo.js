@@ -140,7 +140,7 @@ router.get('/:name/step/:num', function(req, res, next) {
  */
 livecodeRouter.get('/', function(req, res, next) {
   var repo = req.params['name'];
-  res.render('livecode', {data: 'stuff'});
+  res.render('livecode', {repo: repo});
 });
 livecodeRouter.get('/start', function(req, res, next) {
   var repo = req.params['name'];
@@ -271,8 +271,6 @@ livecodeRouter.get('/nextstep', function(req, res, next) {
       exec('git commit -m "Livecode demo [Step ' + step + ' completed]"', { cwd: 'data/' + repo }, function(error, stdout, stderr) {
         // NOTE: distinguish errors, and simply no difference. This might be fragile as it
         //   is relying on current git stdout message.
-        console.log(stdout);
-        console.log('"' + stdout.toString('utf-8').trim() + '"');
         if (error && error.code == 1 && /nothing to commit, working directory clean/.test(stdout.toString('utf-8')))
         {
           console.log('Moving to next step (' + (step + 1) + '), despite no difference in working directory');
