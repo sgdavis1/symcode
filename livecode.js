@@ -42,6 +42,7 @@ module.exports.getSteps = function(repo, callback) {
     }
     else
     {
+      ret.steps = [];
       var lines = stdout.split(/\r?\n/);
       var numSteps = 0;
       for (var i = 0; i < lines.length; i++)
@@ -50,7 +51,7 @@ module.exports.getSteps = function(repo, callback) {
         var summary = lines[i].substring(8);
         if (hash)
         {
-          ret[numSteps] = {'hash': hash, 'summary': summary};
+          ret.steps[numSteps] = {'hash': hash, 'summary': summary};
           numSteps++;
         }
       }

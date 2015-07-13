@@ -104,20 +104,20 @@ router.get('/:name/step/:num', function(req, res, next) {
     }
 
     // Now parse the steps
-    if (json[num - 1] && !(json[num]))
+    if (num == json.steps.length - 1)
     {
       // Final step
       res.json({}); 
       return;
     }
-    else if (!json[num - 1])
+    else if (num <= 0 || num >= json.steps.length)
     {
       res.json({'error': {'command': 'step-details', 'message': 'Bad step number: ' + num}});
       return;
     }
 
-    var startHash = json[num - 1].hash;
-    var endHash = json[num].hash;
+    var startHash = json.steps[num - 1].hash;
+    var endHash = json.steps[num].hash;
     exec('git --no-pager diff ' + startHash + '..' + endHash, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
       var ret = {};
       if (error !== null)
@@ -162,16 +162,16 @@ livecodeRouter.get('/start', function(req, res, next) {
   }
   
   // Get all steps, create branch off of initial commit (step 0)
-  livecode.getSteps(repo, function(steps) {
-    if (steps.error) 
+  livecode.getSteps(repo, function(json) {
+    if (json.error) 
     {
-      res.json(steps);
+      res.json({'error': {'on': 'getSteps', 'command': 'start', 'message': json.error}});
       return;
     }
 
     // Create branch
-    console.log('Livecode branch "' + LIVECODE_BRANCH + '" will be created off of hash "' + steps[0].hash + '"');
-    exec('git branch ' + LIVECODE_BRANCH + ' ' + steps[0].hash, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
+    console.log('Livecode branch "' + LIVECODE_BRANCH + '" will be created off of hash "' + json.steps[0].hash + '"');
+    exec('git branch ' + LIVECODE_BRANCH + ' ' + json.steps[0].hash, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
       if (error !== null) 
       {
         res.json({'error': {'on': 'branch', 'command': 'start', 'message': error}});
@@ -275,14 +275,14 @@ livecodeRouter.get('/livediff', function(req, res, next) {
     }
 
     var step = data.step;
-    livecode.getSteps(repo, function(steps) {
-      if (steps.error) 
+    livecode.getSteps(repo, function(json) {
+      if (json.error) 
       {
-        res.json({'error': {'on': 'getSteps', 'command': 'livediff', 'message': data.error}});
+        res.json({'error': {'on': 'getSteps', 'command': 'livediff', 'message': json.error}});
         return;
       }
 
-      exec('git --no-pager diff ' + steps[step].hash + ' --', {cwd: 'data/' + repo}, function(error, stdout, stderr) {
+      exec('git --no-pager diff ' + json.steps[step].hash + ' --', {cwd: 'data/' + repo}, function(error, stdout, stderr) {
         var ret = {};
         if (error !== null)
         {
