@@ -146,6 +146,22 @@ livecodeRouter.get('/start', function(req, res, next) {
   var repo = req.params['name'];
   console.log('Starting livecode session for ' + repo);
 
+  // Deny request if currently locked
+  try
+  {
+    var lockStats = fs.statSync('data/' + repo + '.lock');
+    if (lockStats.isFile())
+    {
+      res.json({'locked': true});
+      return;
+    }
+  }
+  catch (err) 
+  {
+    console.log('Warning: error during lock file inspection (repo: "' + repo + '"). Skipping...');
+    console.log('  error: ' + err);
+  }
+  
   // Get all steps, create branch off of initial commit (step 0)
   livecode.getSteps(repo, function(steps) {
     if (steps.error) 
@@ -206,8 +222,11 @@ livecodeRouter.get('/reset', function(req, res, next) {
         return;
       }
 
-      // All done!!
-      res.json({'success': true});
+      // And delete our lock file
+      fs.unlink('data/' + repo + '.lock', function() {
+        // All done!!
+        res.json({'success': true});
+      });
     });
   });
 });
