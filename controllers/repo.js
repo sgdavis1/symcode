@@ -110,7 +110,7 @@ router.get('/:name/step/:num', function(req, res, next) {
       res.json({}); 
       return;
     }
-    else if (num <= 0 || num >= json.steps.length)
+    else if (!parseInt(num) || num <= 0 || num >= json.steps.length)
     {
       res.json({'error': {'command': 'step-details', 'message': 'Bad step number: ' + num}});
       return;
