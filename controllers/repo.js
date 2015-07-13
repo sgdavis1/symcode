@@ -159,7 +159,7 @@ livecodeRouter.get('/start', function(req, res, next) {
     exec('git branch ' + LIVECODE_BRANCH + ' ' + steps[0].hash, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
       if (error !== null) 
       {
-        res.json({'error': {'on': 'branching', 'command': 'start', 'message': error}});
+        res.json({'error': {'on': 'branch', 'command': 'start', 'message': error}});
         return;
       }
 
@@ -213,6 +213,7 @@ livecodeRouter.get('/reset', function(req, res, next) {
 });
 livecodeRouter.get('/livediff', function(req, res, next) {
   var repo = req.params['name'];
+  console.log('Doing livediff for repo  "' + repo + '"');
   livecode.getCurrentStep(repo, function(data) {
     // Check for an error on checkout
     if (data.error) 
@@ -245,7 +246,59 @@ livecodeRouter.get('/livediff', function(req, res, next) {
     });
   });
 });
-livecodeRouter.get('/nextstep/:step', function(req, res, next) {
+livecodeRouter.get('/nextstep', function(req, res, next) {
   var repo = req.params['name'];
-  res.send('TODO: nextstep (specify, or from session?)');
+  console.log('Moving repo "' + repo + '" to next step');
+
+  // Get the current step for this repo
+  livecode.getCurrentStep(repo, function(data) {
+    // Check for an error on checkout
+    if (data.error) 
+    {
+      res.json({'error': {'on': 'getCurrentStep', 'command': 'nextstep', 'message': data.error}});
+      return;
+    }
+
+    var step = parseInt(data.step);
+    exec('git add -A', { cwd: 'data/' + repo }, function(error, stdout, stderr) {
+      if (error !== null) 
+      {
+        res.json({'error': {'on': 'add', 'command': 'nextstep', 'message': error}});
+        return;
+      }
+
+      // Now checkout the branch
+      exec('git commit -m "Livecode demo [Step ' + step + ' completed]"', { cwd: 'data/' + repo }, function(error, stdout, stderr) {
+        // NOTE: distinguish errors, and simply no difference. This might be fragile as it
+        //   is relying on current git stdout message.
+        console.log(stdout);
+        console.log('"' + stdout.toString('utf-8').trim() + '"');
+        if (error && error.code == 1 && /nothing to commit, working directory clean/.test(stdout.toString('utf-8')))
+        {
+          console.log('Moving to next step (' + (step + 1) + '), despite no difference in working directory');
+        }
+        else if (error !== null) 
+        {
+          ret = {'error': {'on': 'commit', 'command': 'nextstep', 'message': error}};
+          ret.error.message.stderr = stderr;
+          res.json(ret);
+          return;
+        }
+
+        // TODO: check if completed (or 'nextstep' can trigger going beyond last step of the demo)
+
+        // Finally (last nest) create our lock file with the current step number(1)
+        fs.writeFile('data/' + repo + '.lock', step + 1, function(error) {
+          if (error !== null) 
+          {
+            res.json({'error': {'on': 'writeFile', 'command': 'nextstep', 'message': error}});
+            return;
+          }
+
+          // All done!
+          res.json({'success' : true, 'currentstep' : (step + 1) });
+        });
+      });
+    });
+  });
 });
