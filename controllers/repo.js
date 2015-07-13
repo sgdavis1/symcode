@@ -152,14 +152,13 @@ livecodeRouter.get('/start', function(req, res, next) {
     var lockStats = fs.statSync('data/' + repo + '.lock');
     if (lockStats.isFile())
     {
-      res.json({'locked': true});
+      res.json({'status': 'locked'});
       return;
     }
   }
   catch (err) 
   {
-    console.log('Warning: error during lock file inspection (repo: "' + repo + '"). Skipping...');
-    console.log('  error: ' + err);
+    // NOTE: assume error indicates absence of lockfile
   }
   
   // Get all steps, create branch off of initial commit (step 0)
@@ -230,9 +229,43 @@ livecodeRouter.get('/reset', function(req, res, next) {
     });
   });
 });
+livecodeRouter.get('/step', function(req, res, next) {
+  var repo = req.params['name'];
+  console.log('Getting current step for Livecode session of repo "' + repo + '"');
+  
+  try
+  {
+    var lockStats = fs.statSync('data/' + repo + '.lock');
+    if (lockStats.isFile())
+    {
+      // Read the current step from the lockfile
+      livecode.getCurrentStep(repo, function(data) {
+        // Check for an error on checkout
+        if (data.error) 
+        {
+          res.json({'error': {'on': 'getCurrentStep', 'command': 'step', 'message': data.error}});
+        }
+        else
+        {
+          // All done
+          res.json({ 'step': parseInt(data.step) });
+        }
+      });
+    }
+    else
+    {
+      res.json({'error': {'on': 'lockfile', 'command': 'step', 'message': 'lockfile is not a file'}});
+    }
+  }
+  catch (err)
+  {
+    // NOTE: assume error indicates absence of lockfile
+    res.json({'status': 'nosession'});
+  }
+});
 livecodeRouter.get('/livediff', function(req, res, next) {
   var repo = req.params['name'];
-  console.log('Doing livediff for repo  "' + repo + '"');
+  console.log('Doing livediff for repo "' + repo + '"');
   livecode.getCurrentStep(repo, function(data) {
     // Check for an error on checkout
     if (data.error) 
