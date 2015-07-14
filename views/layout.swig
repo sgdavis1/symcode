@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>{% block pageTitle %}Welcome to LiveCode!!{% endblock %}</title>
+  <title>{% block pageTitle %}Welcome to SymCode!!{% endblock %}</title>
   <link rel="stylesheet" href="/semantic.min.css">
   <link rel="stylesheet" href="/css/main.css">
-  <link rel="stylesheet" href="/css/livecode.css">
+  <link rel="stylesheet" href="/css/symcode.css">
 </head>
 <body>
   {% block content %}{% endblock %}

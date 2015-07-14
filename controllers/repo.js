@@ -2,16 +2,16 @@ var express = require('express');
 var fs = require('fs');
 var exec = require('child_process').exec;
 
-var livecode = require('../livecode');
+var symcode = require('../symcode');
 
 var router = express.Router();
-var livecodeRouter = express.Router({ mergeParams: true });
+var symcodeRouter = express.Router({ mergeParams: true });
 
 // Constants
-var LIVECODE_BRANCH = 'livecode';
+var SYMCODE_BRANCH = 'symcode';
 
-// Setup the sub-route to livecode calls
-router.use('/:name/livecode', livecodeRouter);
+// Setup the sub-route to symcode calls
+router.use('/:name/symcode', symcodeRouter);
 // Setup the '/repo' routes, as our only export
 module.exports = function(app) {
   app.use('/repo', router);
@@ -84,7 +84,7 @@ router.get('/:name/steps', function(req, res, next) {
   console.log('Getting step list for repo: "data/' + repo + '/"');
 
   // Read the steps and respond with JSON
-  livecode.getSteps(repo, function(json) { res.json(json); });
+  symcode.getSteps(repo, function(json) { res.json(json); });
 });
 
 /**
@@ -96,7 +96,7 @@ router.get('/:name/step/:num', function(req, res, next) {
   console.log('Getting step #' + num + ' instructions for repo: "data/' + repo + '/"');
 
   // Get step list, then read step instructions
-  livecode.getSteps(repo, function(json) {
+  symcode.getSteps(repo, function(json) {
     if (json.error) 
     {
       res.json(json);
@@ -135,16 +135,16 @@ router.get('/:name/step/:num', function(req, res, next) {
 
 
 /**
- * Livecode routes
+ * Symcode routes
  *   (Specified repo name stored in req.params.name)
  */
-livecodeRouter.get('/', function(req, res, next) {
+symcodeRouter.get('/', function(req, res, next) {
   var repo = req.params['name'];
-  res.render('livecode', {repo: repo});
+  res.render('symcode', {repo: repo});
 });
-livecodeRouter.get('/start', function(req, res, next) {
+symcodeRouter.get('/start', function(req, res, next) {
   var repo = req.params['name'];
-  console.log('Starting livecode session for ' + repo);
+  console.log('Starting symcode session for ' + repo);
 
   // Deny request if currently locked
   try
@@ -162,7 +162,7 @@ livecodeRouter.get('/start', function(req, res, next) {
   }
   
   // Get all steps, create branch off of initial commit (step 0)
-  livecode.getSteps(repo, function(json) {
+  symcode.getSteps(repo, function(json) {
     if (json.error) 
     {
       res.json({'error': {'on': 'getSteps', 'command': 'start', 'message': json.error}});
@@ -170,8 +170,8 @@ livecodeRouter.get('/start', function(req, res, next) {
     }
 
     // Create branch
-    console.log('Livecode branch "' + LIVECODE_BRANCH + '" will be created off of hash "' + json.steps[0].hash + '"');
-    exec('git branch ' + LIVECODE_BRANCH + ' ' + json.steps[0].hash, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
+    console.log('Symcode branch "' + SYMCODE_BRANCH + '" will be created off of hash "' + json.steps[0].hash + '"');
+    exec('git branch ' + SYMCODE_BRANCH + ' ' + json.steps[0].hash, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
       if (error !== null) 
       {
         res.json({'error': {'on': 'branch', 'command': 'start', 'message': error}});
@@ -179,7 +179,7 @@ livecodeRouter.get('/start', function(req, res, next) {
       }
 
       // Now checkout the branch
-      exec('git checkout ' + LIVECODE_BRANCH, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
+      exec('git checkout ' + SYMCODE_BRANCH, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
         if (error !== null) 
         {
           res.json({'error': {'on': 'checkout', 'command': 'start', 'message': error}});
@@ -201,7 +201,7 @@ livecodeRouter.get('/start', function(req, res, next) {
     });
   });
 });
-livecodeRouter.get('/reset', function(req, res, next) {
+symcodeRouter.get('/reset', function(req, res, next) {
   var repo = req.params['name'];
   console.log('Resetting ' + repo + ' to normal state');
   exec('git checkout -f master', { cwd: 'data/' + repo }, function(error, stdout, stderr) {
@@ -213,7 +213,7 @@ livecodeRouter.get('/reset', function(req, res, next) {
     }
 
     // No errors, so force branch deletion
-    exec('git branch -D ' + LIVECODE_BRANCH, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
+    exec('git branch -D ' + SYMCODE_BRANCH, { cwd: 'data/' + repo }, function(error, stdout, stderr) {
       // Check for an error on branch deletion
       if (error !== null) 
       {
@@ -229,9 +229,9 @@ livecodeRouter.get('/reset', function(req, res, next) {
     });
   });
 });
-livecodeRouter.get('/step', function(req, res, next) {
+symcodeRouter.get('/step', function(req, res, next) {
   var repo = req.params['name'];
-  console.log('Getting current step for Livecode session of repo "' + repo + '"');
+  console.log('Getting current step for Symcode session of repo "' + repo + '"');
   
   try
   {
@@ -239,7 +239,7 @@ livecodeRouter.get('/step', function(req, res, next) {
     if (lockStats.isFile())
     {
       // Read the current step from the lockfile
-      livecode.getCurrentStep(repo, function(data) {
+      symcode.getCurrentStep(repo, function(data) {
         // Check for an error on checkout
         if (data.error) 
         {
@@ -263,10 +263,10 @@ livecodeRouter.get('/step', function(req, res, next) {
     res.json({'status': 'nosession'});
   }
 });
-livecodeRouter.get('/livediff', function(req, res, next) {
+symcodeRouter.get('/livediff', function(req, res, next) {
   var repo = req.params['name'];
   //console.log('Doing livediff for repo "' + repo + '"');
-  livecode.getCurrentStep(repo, function(data) {
+  symcode.getCurrentStep(repo, function(data) {
     // Check for an error on checkout
     if (data.error) 
     {
@@ -275,7 +275,7 @@ livecodeRouter.get('/livediff', function(req, res, next) {
     }
 
     var step = data.step;
-    livecode.getSteps(repo, function(json) {
+    symcode.getSteps(repo, function(json) {
       if (json.error) 
       {
         res.json({'error': {'on': 'getSteps', 'command': 'livediff', 'message': json.error}});
@@ -303,12 +303,12 @@ livecodeRouter.get('/livediff', function(req, res, next) {
     });
   });
 });
-livecodeRouter.get('/nextstep', function(req, res, next) {
+symcodeRouter.get('/nextstep', function(req, res, next) {
   var repo = req.params['name'];
   console.log('Moving repo "' + repo + '" to next step');
 
   // Get the current step for this repo
-  livecode.getCurrentStep(repo, function(data) {
+  symcode.getCurrentStep(repo, function(data) {
     // Check for an error on checkout
     if (data.error) 
     {
@@ -325,7 +325,7 @@ livecodeRouter.get('/nextstep', function(req, res, next) {
       }
 
       // Now checkout the branch
-      exec('git commit -m "Livecode demo [Step ' + step + ' completed]"', { cwd: 'data/' + repo }, function(error, stdout, stderr) {
+      exec('git commit -m "Symcode demo [Step ' + step + ' completed]"', { cwd: 'data/' + repo }, function(error, stdout, stderr) {
         // NOTE: distinguish errors, and simply no difference. This might be fragile as it
         //   is relying on current git stdout message.
         if (error && error.code == 1 && /nothing to commit, working directory clean/.test(stdout.toString('utf-8')))

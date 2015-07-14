@@ -28,7 +28,7 @@ module.exports.getSteps = function(repo, callback) {
   if (!verifyRepo(repo))
   {
     process.nextTick(function() { 
-      callback({'error': {'on': 'verifyRepo', 'command': 'steps', 'message': 'Bad demo name "' + repo + '"'}});
+      callback({'error': {'on': 'verifyRepo', 'command': 'steps', 'message': 'Bad repo name "' + repo + '"'}});
     });
     return;
   }
@@ -63,7 +63,7 @@ module.exports.getSteps = function(repo, callback) {
 };
 
 /**
- * Loocking at the lockfile, get the current step of the livecode session.
+ * Looking at the lockfile, get the current step of the symcode session.
  */
 module.exports.getCurrentStep = function (repo, callback) {
   fs.readFile('data/' + repo + '.lock', function(error, data) {

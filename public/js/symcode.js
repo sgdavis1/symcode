@@ -1,9 +1,9 @@
 /**
- * Client side library for LiveCode
+ * Client side library for SymCode
  * NOTE: requires jQuery
  */
 
-var livecodeApp = {
+var symcodeApp = {
   LIVEDIFF_ERR_DELAY: 15000,
   LIVEDIFF_REFRESH: 250,
   /**
@@ -33,7 +33,7 @@ var livecodeApp = {
       accordion += '<div class="content code-wrap">';
       for (var i = 0; i < data[filename].length; i++)
       {
-        var line = livecodeApp.escape(data[filename][i]);
+        var line = symcodeApp.escape(data[filename][i]);
         if (/^@@.*/.test(line) || /^index.*/.test(line) || /^--- .*/.test(line) || /^\+\+\+ .*/.test(line))
           accordion += '<pre class="metadata">' + line + '</pre>';
         else if (/^\+.*/.test(line))
@@ -57,14 +57,14 @@ var livecodeApp = {
    */
   'setStep': function(num) {
     // Memory
-    livecode.step = num;
+    symcode.step = num;
     // UI
     $('#current-step span').replaceWith('<span>' + num + '</span>');
-    if (livecode.step + 1 == livecode.totalSteps)
+    if (symcode.step + 1 == symcode.totalSteps)
       $('#current-step button').addClass('disabled');
 
     // Get the file change list, parse, and display
-    $.ajax({ 'url': '/repo/' + livecode.repo + '/step/' + livecode.step, dataType: 'json',
+    $.ajax({ 'url': '/repo/' + symcode.repo + '/step/' + symcode.step, dataType: 'json',
       'complete': function(xhr, status) {
         console.log('Session current step details request complete');
         if (xhr.responseJSON.error) 
@@ -75,7 +75,7 @@ var livecodeApp = {
         else
         {
           // Add the file changes to the accordion
-          livecodeApp.fillCodeAccordion($('#current-step-accordion'), xhr.responseJSON);
+          symcodeApp.fillCodeAccordion($('#current-step-accordion'), xhr.responseJSON);
         }
       }
     });
@@ -84,7 +84,7 @@ var livecodeApp = {
    * Start up a new session on the named repository.
    */
   startSession: function() {
-    $.ajax({ 'url': '/repo/' + livecode.repo + '/livecode/start', dataType: 'json',
+    $.ajax({ 'url': '/repo/' + symcode.repo + '/symcode/start', dataType: 'json',
       'complete': function(xhr, status) {
         console.log('Session start request complete');
         if (xhr.responseJSON.error) 
@@ -95,11 +95,11 @@ var livecodeApp = {
         else
         {
           // Update our in memory object to indicate this has been completed
-          livecode.sessionStarted = new Date();
-          livecodeApp.setStep(1);
+          symcode.sessionStarted = new Date();
+          symcodeApp.setStep(1);
 
           // And start the livediff polling
-          livecodeApp.livediff();
+          symcodeApp.livediff();
         }
       }
     });
@@ -108,7 +108,7 @@ var livecodeApp = {
    * Resume a session according to the last step recorded on the server.
    */
   resumeSession: function() {
-    $.ajax({ 'url': '/repo/' + livecode.repo + '/livecode/step', dataType: 'json',
+    $.ajax({ 'url': '/repo/' + symcode.repo + '/symcode/step', dataType: 'json',
       'complete': function(xhr, status) {
         console.log('Querying for current step complete');
         if (xhr.responseJSON.error) 
@@ -119,10 +119,10 @@ var livecodeApp = {
         else
         {
           // Update the UI to the correct Step
-          livecodeApp.setStep(xhr.responseJSON.step);
+          symcodeApp.setStep(xhr.responseJSON.step);
 
           // And start the livediff polling
-          livecodeApp.livediff();
+          symcodeApp.livediff();
         }
       }
     });
@@ -132,12 +132,12 @@ var livecodeApp = {
    */
   reset: function(exit) {
     // First make sure the livediff stops
-    clearTimeout(livecode.timeoutId);
+    clearTimeout(symcode.timeoutId);
 
     // Now reset the repo
-    $.ajax({ 'url': '/repo/' + livecode.repo + '/livecode/reset', dataType: 'json',
+    $.ajax({ 'url': '/repo/' + symcode.repo + '/symcode/reset', dataType: 'json',
       'complete': function(xhr, status) {
-        console.log('Resetting livecode session complete');
+        console.log('Resetting symcode session complete');
         if (xhr.responseJSON.error) 
         {
           console.log(xhr.responseJSON.error);
@@ -158,14 +158,14 @@ var livecodeApp = {
    */
   livediff: function() {
     // Perform the livediff call via AJAX
-    $.ajax({ 'url': '/repo/' + livecode.repo + '/livecode/livediff', dataType: 'json',
+    $.ajax({ 'url': '/repo/' + symcode.repo + '/symcode/livediff', dataType: 'json',
       'complete': function(xhr, status) {
         if (xhr.responseJSON.error) 
         {
           console.log(xhr.responseJSON.error);
           alert('An error occurred!\n\n' + xhr.responseJSON.error.message);
           // And schedule our next iteration with a delay
-          livecode.timeoutId = setTimeout(livecodeApp.livediff, livecodeApp.LIVEDIFF_ERR_DELAY);
+          symcode.timeoutId = setTimeout(symcodeApp.livediff, symcodeApp.LIVEDIFF_ERR_DELAY);
         }
         else
         {
@@ -179,27 +179,27 @@ var livecodeApp = {
           for (var filename in data)
           {
             // First search for an existing segment matching this filename
-            var el = $('#livediff-' + livecodeApp.strip(filename) + ' .code-wrap');
+            var el = $('#livediff-' + symcodeApp.strip(filename) + ' .code-wrap');
             if (el.length == 0)
             {
               // Appears to be a new file
               //   Add a new segment construct for this file
-              var newSeg = '<div id="livediff-' + livecodeApp.strip(filename) + '" class="ui segment livediff">';
-              newSeg += '  <div class="ui small header">' + livecodeApp.escape(filename) + '</div>';
+              var newSeg = '<div id="livediff-' + symcodeApp.strip(filename) + '" class="ui segment livediff">';
+              newSeg += '  <div class="ui small header">' + symcodeApp.escape(filename) + '</div>';
               newSeg += '  <div class="ui segments">';
               newSeg += '    <div class="ui segment code-wrap"></div>';
               newSeg += '  </div>';
               newSeg += '</div>';
               
               $('#livediff-segments').append(newSeg);
-              el = $('#livediff-' + livecodeApp.strip(filename) + ' .code-wrap');
+              el = $('#livediff-' + symcodeApp.strip(filename) + ' .code-wrap');
             }
 
             // Segment content: Diff listing
             var content = '';
             for (var i = 0; i < data[filename].length; i++)
             {
-              var line = livecodeApp.escape(data[filename][i]);
+              var line = symcodeApp.escape(data[filename][i]);
               if (/^@@.*/.test(line) || /^index.*/.test(line) || /^--- .*/.test(line) || /^\+\+\+ .*/.test(line))
                 content += '<pre class="metadata">' + line + '</pre>';
               else if (/^\+.*/.test(line))
@@ -216,7 +216,7 @@ var livecodeApp = {
             el.append(content);
 
             // And keep track of the el name
-            livediffEls['livediff-' + livecodeApp.strip(filename)] = 'found';
+            livediffEls['livediff-' + symcodeApp.strip(filename)] = 'found';
           }
 
           // Now clear any previous existing segments if all changes are completed
@@ -225,7 +225,7 @@ var livecodeApp = {
           });
 
           // Check for the automatic trigger to move to the next step (no file changes)
-          if ($('#livediff-segments .livediff').length == 0 && livecode.step + 1 < livecode.totalSteps)
+          if ($('#livediff-segments .livediff').length == 0 && symcode.step + 1 < symcode.totalSteps)
           {
             var content = '<div class="ui segment">';
             content += '  <div class="ui medium header">Step Complete!</div>';
@@ -239,10 +239,10 @@ var livecodeApp = {
             
             // Bind the button click handler
             $('#next-step').on('click', function(ev) {
-              livecodeApp.nextStep();
+              symcodeApp.nextStep();
             });
           }
-          else if ($('#livediff-segments .livediff').length == 0 && livecode.step + 1 == livecode.totalSteps)
+          else if ($('#livediff-segments .livediff').length == 0 && symcode.step + 1 == symcode.totalSteps)
           {
             var content = '<div class="ui segment">';
             content += '  <div class="ui large header">All Steps Completed!</div>';
@@ -256,7 +256,7 @@ var livecodeApp = {
           else
           {
             // Schedule our next iteration
-            livecode.timeoutId = setTimeout(livecodeApp.livediff, livecodeApp.LIVEDIFF_REFRESH);
+            symcode.timeoutId = setTimeout(symcodeApp.livediff, symcodeApp.LIVEDIFF_REFRESH);
           }
         }
       }
@@ -267,9 +267,9 @@ var livecodeApp = {
    */
   nextStep: function() {
     // Now move the repo to the next step
-    $.ajax({ 'url': '/repo/' + livecode.repo + '/livecode/nextstep', dataType: 'json',
+    $.ajax({ 'url': '/repo/' + symcode.repo + '/symcode/nextstep', dataType: 'json',
       'complete': function(xhr, status) {
-        console.log('Nextstep request of "' + livecode.repo + '" complete');
+        console.log('Nextstep request of "' + symcode.repo + '" complete');
         if (xhr.responseJSON.error) 
         {
           console.log(xhr.responseJSON.error);
@@ -281,10 +281,10 @@ var livecodeApp = {
           $('#livediff-segments').empty();
 
           // Now move the UI to the next step
-          livecodeApp.setStep(livecode.step + 1);
+          symcodeApp.setStep(symcode.step + 1);
 
           // And restart our livediff timeout
-          livecode.timeoutId = setTimeout(livecodeApp.livediff, livecodeApp.LIVEDIFF_REFRESH);
+          symcode.timeoutId = setTimeout(symcodeApp.livediff, symcodeApp.LIVEDIFF_REFRESH);
         }
       }
     });
@@ -295,9 +295,9 @@ $(document).on('ready', function(ev) {
   //
   // Initialize our page, first check for a session lock
   //
-  $.ajax({ 'url': '/repo/' + livecode.repo, dataType: 'json',
+  $.ajax({ 'url': '/repo/' + symcode.repo, dataType: 'json',
     'complete': function(xhr, status) {
-      console.log('Querying for repo status of "' + livecode.repo + '" complete');
+      console.log('Querying for repo status of "' + symcode.repo + '" complete');
       if (xhr.responseJSON.error) 
       {
         console.log(xhr.responseJSON.error);
@@ -310,7 +310,7 @@ $(document).on('ready', function(ev) {
         //
         console.log('Session in progress! Querying for current step...');
         // TODO message to user, allow for 'reset' with data loss
-        livecodeApp.resumeSession();
+        symcodeApp.resumeSession();
       }
       else if (!xhr.responseJSON.locked && xhr.responseJSON.valid)
       {
@@ -318,7 +318,7 @@ $(document).on('ready', function(ev) {
         //
         // Trigger the starting of the session
         //
-        livecodeApp.startSession();
+        symcodeApp.startSession();
       }
       else if (!xhr.responseJSON.valid)
       {
@@ -334,7 +334,7 @@ $(document).on('ready', function(ev) {
   //
   // And request the steps overview for this repo
   //
-  $.ajax({ 'url': '/repo/' + livecode.repo + '/steps', dataType: 'json',
+  $.ajax({ 'url': '/repo/' + symcode.repo + '/steps', dataType: 'json',
     'complete': function(xhr, status) {
       console.log('Session steps overview request complete');
       if (xhr.responseJSON.error) 
@@ -346,7 +346,7 @@ $(document).on('ready', function(ev) {
       {
         // Add the steps to the table as table rows
         var steps = xhr.responseJSON.steps;
-        livecode.totalSteps = steps.length;
+        symcode.totalSteps = steps.length;
         var rows = '', row = '';
         for (var i = 0; i < steps.length; i++)
         {

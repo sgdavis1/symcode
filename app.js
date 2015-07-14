@@ -2,7 +2,6 @@ var express = require('express');
 var swig = require('swig');
 var session = require('client-sessions');
 
-var livecode = require('./livecode');
 
 /** Setup the Express server **/
 app = express();
@@ -16,7 +15,7 @@ app.set('view engine', 'swig');
 require('./controllers/repo')(app);
 
 /** Sessions **/
-app.use(session({cookieName: 'session', secret: 'livecodeRocks!!', duration: 0 }));
+app.use(session({cookieName: 'session', secret: 'symcodeRocks!!', duration: 0 }));
 
 /**
  * Main Homepage

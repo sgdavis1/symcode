@@ -1,22 +1,22 @@
 {% extends 'layout.swig' %}
 
 {% block pageTitle %}
-  Livecoding on '{{ repo }}' :: LiveCode
+  Symcoding on '{{ repo }}' :: SymCode
 {% endblock %}
 
 {% block content %}
   <header class="ui fixed inverted menu">
     <div class="ui container">
-      <div class="header item"><a href="/">LiveCode</a></div>
+      <div class="header item"><a href="/">SymCode</a></div>
       <div class="header item">{{ repo }}</div>
       <div class="item">
-        Active Livecode Session
+        Active Symcode Session
         <button id="reset-button" class="ui small icon button" 
-          title="Reset this Session to Step 1" onclick="livecodeApp.reset();">
+          title="Reset this Session to Step 1" onclick="symcodeApp.reset();">
           <i class="icon refresh"></i>
         </button>
         <button id="exit-button" class="ui small icon button"
-          title="Exit and Discard this Session" onclick="livecodeApp.reset(true);">
+          title="Exit and Discard this Session" onclick="symcodeApp.reset(true);">
           <i class="icon remove"></i>
         </button>
       </div>
@@ -39,7 +39,7 @@
       </table>
       <aside id="current-step" class="ui huge inverted header">
         Step <span>?</span>
-        <button class="ui button" title="Skip to the next Step" onclick="livecodeApp.nextStep();">
+        <button class="ui button" title="Skip to the next Step" onclick="symcodeApp.nextStep();">
           <i class="icon right arrow"></i>
         </button>
       </aside>
@@ -64,10 +64,10 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="/js/livecode.js"></script>
+  <script src="/js/symcode.js"></script>
   <script>
     // Initialize the current repo info on the client
-    var livecode = {
+    var symcode = {
       repo: "{{ repo }}"
     };
   </script>
