@@ -17,7 +17,7 @@ var symcodeApp = {
    * Basic HTML strip function (for usage in element ids).
    */
   'strip': function(str) {
-    return str.replace(/[&><"'\.]/g, '_');
+    return str.replace(/[&><"'\.\/]/g, '_');
   },
   /**
    * Function to parse a file changes hash (diff output) and insert into the
