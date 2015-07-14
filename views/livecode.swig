@@ -1,5 +1,9 @@
 {% extends 'layout.swig' %}
 
+{% block pageTitle %}
+  Livecoding on '{{ repo }}' :: LiveCode
+{% endblock %}
+
 {% block content %}
   <header class="ui fixed inverted menu">
     <div class="ui container">
@@ -7,10 +11,12 @@
       <div class="header item">{{ repo }}</div>
       <div class="item">
         Active Livecode Session
-        <button id="reset-button" class="ui small icon button" onclick="livecodeApp.reset();">
+        <button id="reset-button" class="ui small icon button" 
+          title="Reset this Session to Step 1" onclick="livecodeApp.reset();">
           <i class="icon refresh"></i>
         </button>
-        <button id="exit-button" class="ui small icon button" onclick="livecodeApp.reset(true);">
+        <button id="exit-button" class="ui small icon button"
+          title="Exit and Discard this Session" onclick="livecodeApp.reset(true);">
           <i class="icon remove"></i>
         </button>
       </div>

@@ -1,0 +1,20 @@
+#welcome.masthead
+{
+  min-height: 700px;
+}
+
+#welcome.masthead h1
+{
+  margin-top: 3em;
+  font-size: 4em;
+}
+
+#welcome-details
+{
+  padding-top: 2.5em;
+}
+
+#welcome-details h2
+{
+  margin-top: 2em;
+}

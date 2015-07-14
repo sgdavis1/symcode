@@ -22,7 +22,7 @@ app.use(session({cookieName: 'session', secret: 'livecodeRocks!!', duration: 0 }
  * Main Homepage
  */
 app.get('/', function(req, res) {
-  res.send("Hello!!");
+  res.render('welcome');
 });
 
 /** Static assets **/

@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Livecoding on '{{ repo }}' :: LiveCode</title>
+  <title>{% block pageTitle %}Welcome to LiveCode!!{% endblock %}</title>
   <link rel="stylesheet" href="/semantic.min.css">
+  <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/css/livecode.css">
 </head>
 <body>
