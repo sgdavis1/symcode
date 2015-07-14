@@ -15,17 +15,53 @@
   position: relative;
 }
 
+header #reset-button,
+header #exit-button
+{
+  padding: 4px;
+  margin-left: 8px;
+}
+
 #current-step
 {
   position: absolute;
   top: 0;
-  right: 0;
+  right: -16px;
   border-radius: 5px;
   background-color: #9a67ca;
   padding: 5px 16px;
+}
+#current-step button
+{
+  padding: 6px;
+  margin-bottom: 6px;
+  vertical-align: middle;
+  margin-left: 16px;
+}
+#current-step button i
+{
+  margin: 0;
 }
 
 #page-wrap section
 {
   margin-bottom: 2.5em;
+}
+
+.code-wrap pre
+{
+  margin: 0;
+}
+
+.code-wrap pre.metadata
+{
+  color: gray;
+}
+.code-wrap pre.addition
+{
+  color: green;
+}
+.code-wrap pre.deletion
+{
+  color: red;
 }
