@@ -265,7 +265,7 @@ livecodeRouter.get('/step', function(req, res, next) {
 });
 livecodeRouter.get('/livediff', function(req, res, next) {
   var repo = req.params['name'];
-  console.log('Doing livediff for repo "' + repo + '"');
+  //console.log('Doing livediff for repo "' + repo + '"');
   livecode.getCurrentStep(repo, function(data) {
     // Check for an error on checkout
     if (data.error) 
@@ -279,6 +279,11 @@ livecodeRouter.get('/livediff', function(req, res, next) {
       if (json.error) 
       {
         res.json({'error': {'on': 'getSteps', 'command': 'livediff', 'message': json.error}});
+        return;
+      }
+      else if (step <= 0 || step >= json.steps.length)
+      {
+        res.json({'error': {'on': 'getSteps', 'command': 'livediff', 'message': 'Bad step number: ' + step}});
         return;
       }
 
