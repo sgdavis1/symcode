@@ -45,7 +45,7 @@ node app.js
 At this point, if you navigate to
 
 ``` 
-http://localhost:3000/repo/&lt;name_of_your_repo&gt;
+http://localhost:3000/repo/<name_of_your_repo>
 ```
 
 the project will start up a 'symcode session' which will replay the steps in the
