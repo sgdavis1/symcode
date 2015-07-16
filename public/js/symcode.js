@@ -350,7 +350,7 @@ $(document).on('ready', function(ev) {
         var rows = '', row = '';
         for (var i = 0; i < steps.length; i++)
         {
-          row = '<td>' + i + '</td><td>' + steps[i].hash + '</td><td>' + steps[i].summary + '</td>';
+          row = '<td>' + i + '</td><td>' + steps[i].hash + '</td><td>' + symcodeApp.escape(steps[i].summary) + '</td>';
           rows += '<tr>' + row + '</tr>';
         }
         $('#overview-table tbody').replaceWith('<tbody>' + rows + '</tbody>');
