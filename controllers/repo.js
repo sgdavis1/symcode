@@ -317,7 +317,7 @@ symcodeRouter.get('/nextstep', function(req, res, next) {
     }
 
     var step = parseInt(data.step);
-    exec('git add -A', { cwd: 'data/' + repo }, function(error, stdout, stderr) {
+    exec('git add -u', { cwd: 'data/' + repo }, function(error, stdout, stderr) {
       if (error !== null) 
       {
         res.json({'error': {'on': 'add', 'command': 'nextstep', 'message': error}});
