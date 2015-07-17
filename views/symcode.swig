@@ -21,6 +21,12 @@
         </button>
       </div>
     </div>
+    <aside id="current-step" class="ui huge inverted header">
+      Step <span>?</span>
+      <button class="ui button" title="Skip to the next Step" onclick="symcodeApp.nextStep();">
+        <i class="icon right arrow"></i>
+      </button>
+    </aside>
   </header>
   <div id="page-wrap" class="ui main container">
     <section id="overview" class="ui container">
@@ -37,12 +43,6 @@
           <tr><td colspan="3"><i class="wait icon"></i> Fetching instructions...</td>
         </tbody>
       </table>
-      <aside id="current-step" class="ui huge inverted header">
-        Step <span>?</span>
-        <button class="ui button" title="Skip to the next Step" onclick="symcodeApp.nextStep();">
-          <i class="icon right arrow"></i>
-        </button>
-      </aside>
     </section>
     <section id="current-step-details" class="ui container">
       <h4 class="ui header">File changes in this step:</h4>
