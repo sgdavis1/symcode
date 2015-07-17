@@ -48,9 +48,15 @@ header #exit-button
   margin-bottom: 2.5em;
 }
 
+.code-wrap
+{
+  overflow-x: scroll;
+}
+
 .code-wrap pre
 {
   margin: 0;
+  overflow: visible;
 }
 
 .code-wrap pre.metadata
