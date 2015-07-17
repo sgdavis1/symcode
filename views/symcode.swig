@@ -31,7 +31,7 @@
   <div id="page-wrap" class="ui main container">
     <section id="overview" class="ui container">
       <h3 class="ui header">Overview</h3>
-      <table id="overview-table" class="ui table">
+      <table id="overview-table" class="ui unstackable table">
         <thead>
           <tr>
             <th>Step</th>
